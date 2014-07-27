@@ -24,7 +24,7 @@ func runTest(test *hpackTest) error {
 		expectedHeaders := testCase["headers"].([]interface{})
 
 		if val, ok := testCase["header_table_size"]; ok {
-			headerTableSize := val.(uint)
+			headerTableSize := uint(val.(float64))
 			decoder.ChangeTableSize(headerTableSize)
 		}
 
