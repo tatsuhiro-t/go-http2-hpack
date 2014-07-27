@@ -13,12 +13,16 @@ func TestHuffmanEncodeDecode(t *testing.T) {
 
 	decoder := NewHuffmanDecoder()
 
-	actual, err := decoder.Decode(buffer, true)
+	output := &bytes.Buffer{}
+
+	err := decoder.Decode(output, buffer.Bytes(), true)
 
 	if err != nil {
 		t.Errorf("decoder.Decode(%v) returns error %v",
 			hex.EncodeToString(buffer.Bytes()), err)
 	}
+
+	actual := output.String()
 
 	if expected != actual {
 		t.Errorf("decoder.Decode(%v) = %v, want %v",
@@ -33,12 +37,16 @@ func TestHuffmanBinary(t *testing.T) {
 
 	decoder := NewHuffmanDecoder()
 
-	actual, err := decoder.Decode(buffer, true)
+	output := &bytes.Buffer{}
+
+	err := decoder.Decode(output, buffer.Bytes(), true)
 
 	if err != nil {
 		t.Errorf("decoder.Decode(%v) returns error %v",
 			hex.EncodeToString(buffer.Bytes()), err)
 	}
+
+	actual := output.String()
 
 	if expected != actual {
 		t.Errorf("decoder.Decode(%v) = %v, want %v",
@@ -54,7 +62,9 @@ func TestHuffmanDecodeEndsPrematury(t *testing.T) {
 
 	buffer.Truncate(buffer.Len() - 1)
 
-	_, err := decoder.Decode(buffer, true)
+	output := &bytes.Buffer{}
+
+	err := decoder.Decode(output, buffer.Bytes(), true)
 
 	if err == nil {
 		t.Errorf("decoder.Decode(%v) must return error",

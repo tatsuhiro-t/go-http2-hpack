@@ -5,13 +5,13 @@ import (
 	"fmt"
 )
 
-func huffmanEncodeSymbol(buffer *bytes.Buffer, rembits int, sym *HuffmanSymbol) int {
+func huffmanEncodeSymbol(dst *bytes.Buffer, rembits int, sym *huffmanSymbol) int {
 	nbits := sym.nbits
 
 	for {
 		if rembits > nbits {
 			b := uint8(sym.code << uint(rembits-nbits))
-			buffer.Bytes()[buffer.Len()-1] |= b
+			dst.Bytes()[dst.Len()-1] |= b
 
 			rembits -= nbits
 
@@ -19,7 +19,7 @@ func huffmanEncodeSymbol(buffer *bytes.Buffer, rembits int, sym *HuffmanSymbol) 
 		}
 
 		b := uint8(sym.code >> uint(nbits-rembits))
-		buffer.Bytes()[buffer.Len()-1] |= b
+		dst.Bytes()[dst.Len()-1] |= b
 
 		nbits -= rembits
 		rembits = 8
@@ -28,75 +28,94 @@ func huffmanEncodeSymbol(buffer *bytes.Buffer, rembits int, sym *HuffmanSymbol) 
 			break
 		}
 
-		buffer.WriteByte(0)
+		dst.WriteByte(0)
 	}
 
 	return rembits
 }
 
-func HuffmanEncode(buffer *bytes.Buffer, str string) {
+// Huffman-encode str and write the output to dst.
+func HuffmanEncode(dst *bytes.Buffer, str string) {
 	rembits := 8
 
 	for _, c := range str {
-		sym := &HuffmanSymbolTable[c]
+		sym := &huffmanSymbolTable[c]
 
 		if rembits == 8 {
-			buffer.WriteByte(0)
+			dst.WriteByte(0)
 		}
 
-		rembits = huffmanEncodeSymbol(buffer, rembits, sym)
+		rembits = huffmanEncodeSymbol(dst, rembits, sym)
 	}
 
 	if rembits < 8 {
-		sym := &HuffmanSymbolTable[256]
+		sym := &huffmanSymbolTable[256]
 
 		b := uint8(sym.code >> uint(sym.nbits-rembits))
-		buffer.Bytes()[buffer.Len()-1] |= b
+		dst.Bytes()[dst.Len()-1] |= b
 	}
 }
 
+// Return the length of bytes when str is huffman-encoded.
+func HuffmanEncodeLength(str string) int {
+	n := 0
+	for _, c := range str {
+		n += huffmanSymbolTable[c].nbits
+	}
+	return (n + 7) / 8
+}
+
+// A HuffmanDecoder decodes huffman-encoded byte string in streaming
+// fashion.
 type HuffmanDecoder struct {
 	state  uint8
 	accept bool
 }
 
+// NewHuffmanDecoder returns new Huffman decoder.
 func NewHuffmanDecoder() *HuffmanDecoder {
 	ctx := &HuffmanDecoder{0, true}
 	return ctx
 }
 
 const (
-	HUFFMAN_DECODE_ACCEPT = 0x1
-	HUFFMAN_DECODE_SYMBOL = 0x2
-	HUFFMAN_DECODE_FAIL   = 0x4
+	huffmanDecodeAccept = 0x1
+	huffmanDecodeSymbol = 0x2
+	huffmanDecodeFail   = 0x4
 )
 
-func (decoder *HuffmanDecoder) Decode(buffer *bytes.Buffer, final bool) (string, error) {
-	out := bytes.Buffer{}
+// Reset decoder state so that it can decode new input.
+func (decoder *HuffmanDecoder) Reset() {
+	decoder.state = 0
+	decoder.accept = true
+}
 
-	for _, c := range buffer.Bytes() {
+// Decode src and write output to dst.  The final signals the end of
+// input.
+func (decoder *HuffmanDecoder) Decode(dst *bytes.Buffer, src []byte, final bool) error {
+	for _, c := range src {
 		x := c >> 4
 		for i := 0; i < 2; i++ {
-			t := &HuffmanDecodeTable[decoder.state][x]
+			t := &huffmanDecodeTable[decoder.state][x]
 
-			if (t.flags & HUFFMAN_DECODE_FAIL) != 0 {
-				return "", fmt.Errorf("Huffman decode error")
+			if (t.flags & huffmanDecodeFail) != 0 {
+				return fmt.Errorf("Huffman decode error")
 			}
 
-			if (t.flags & HUFFMAN_DECODE_SYMBOL) != 0 {
-				out.WriteByte(t.symbol)
+			if (t.flags & huffmanDecodeSymbol) != 0 {
+				dst.WriteByte(t.symbol)
 			}
 
 			decoder.state = t.state
-			decoder.accept = (t.flags & HUFFMAN_DECODE_ACCEPT) != 0
+			decoder.accept = (t.flags & huffmanDecodeAccept) != 0
 
 			x = c & 0xf
 		}
 	}
 
 	if final && !decoder.accept {
-		return "", fmt.Errorf("Huffman decode ended prematurely")
+		return fmt.Errorf("Huffman decode ended prematurely")
 	}
 
-	return string(out.Bytes()), nil
+	return nil
 }

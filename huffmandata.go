@@ -1,17 +1,17 @@
 package hpack
 
-type HuffmanSymbol struct {
+type huffmanSymbol struct {
 	nbits int
 	code  uint32
 }
 
-type HuffmanDecodeNode struct {
+type huffmanDecodeNode struct {
 	state  uint8
 	flags  uint8
 	symbol uint8
 }
 
-var HuffmanSymbolTable = []HuffmanSymbol{
+var huffmanSymbolTable = []huffmanSymbol{
 	{13, 0x1ff8},
 	{23, 0x7fffd8},
 	{28, 0xfffffe2},
@@ -271,7 +271,7 @@ var HuffmanSymbolTable = []HuffmanSymbol{
 	{30, 0x3fffffff},
 }
 
-var HuffmanDecodeTable = [][16]HuffmanDecodeNode{
+var huffmanDecodeTable = [][16]huffmanDecodeNode{
 
 	{
 		{4, 0x00, 0},
