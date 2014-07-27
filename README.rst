@@ -2,7 +2,8 @@ HTTP/2 HPACK in golang
 ======================
 
 This is HTTP/2 HPACK implementation in golang.  This is direct port
-from nghttp2's HPACK C implementation.  For HPACK specification, see
+from `nghttp2 <https://nghttp2.org/>`_ 's HPACK C implementation.  For
+HPACK specification, see
 http://http2.github.io/http2-spec/compression.html
 
 Currently this package implements HPACK draft-08 plus propsed changes
@@ -12,6 +13,8 @@ The changes from draft-08 are:
 * The reference set was removed.
 * The static header table in front of the dynamic header table.
 * No copy was made when referening entry in static header table.
+
+This is my first golang project. Any comments and patches are welcome.
 
 Example
 -------
