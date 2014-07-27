@@ -17,7 +17,16 @@ func NewHeader(name, value string, neverIndex bool) *Header {
 }
 
 type headerTableEntry struct {
-	header *Header
+	header    *Header
+	nameHash  uint32
+	valueHash uint32
+}
+
+func newHeaderTableEntry(header *Header) *headerTableEntry {
+	nameHash := uint32hash(header.Name)
+	valueHash := uint32hash(header.Value)
+
+	return &headerTableEntry{header, nameHash, valueHash}
 }
 
 const (
@@ -30,6 +39,16 @@ const (
 const (
 	uint32Max = uint(^uint32(0))
 )
+
+func uint32hash(s string) uint32 {
+	h := uint32(0)
+
+	for _, c := range s {
+		h = h*31 + uint32(c)
+	}
+
+	return h
+}
 
 func ctstreq(a, b string) bool {
 	if len(a) != len(b) {
@@ -144,13 +163,17 @@ func (ht *headerTable) Get(idx int) *headerTableEntry {
 func (ht *headerTable) Search(name string, value string, noNameValueMatch bool) (index int, nameValueMatch bool) {
 	index = -1
 
+	nameHash := uint32hash(name)
+	valueHash := uint32hash(value)
+
 	for idx, entry := range staticTable {
-		if ctstreq(name, entry.header.Name) {
+		if nameHash == entry.nameHash && ctstreq(name, entry.header.Name) {
 			if index == -1 {
 				index = idx
 			}
 
 			if !noNameValueMatch &&
+				valueHash == entry.valueHash &&
 				ctstreq(value, entry.header.Value) {
 
 				index = idx
@@ -167,12 +190,13 @@ func (ht *headerTable) Search(name string, value string, noNameValueMatch bool) 
 	for idx := 0; idx < ht.tablelen; idx++ {
 		entry := ht.dynget(idx)
 
-		if ctstreq(name, entry.header.Name) {
+		if nameHash == entry.nameHash && ctstreq(name, entry.header.Name) {
 			if index == -1 {
 				index = idx + staticTableLength()
 			}
 
 			if !noNameValueMatch &&
+				valueHash == entry.valueHash &&
 				ctstreq(value, entry.header.Value) {
 
 				index = idx + staticTableLength()
@@ -185,7 +209,7 @@ func (ht *headerTable) Search(name string, value string, noNameValueMatch bool) 
 }
 
 func makeEntry(name, value string, nameHash, valueHash uint32) headerTableEntry {
-	return headerTableEntry{&Header{name, value, false}}
+	return headerTableEntry{&Header{name, value, false}, nameHash, valueHash}
 }
 
 var staticTable = []headerTableEntry{

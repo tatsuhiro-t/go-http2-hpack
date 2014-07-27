@@ -16,14 +16,14 @@ func TestHeaderTablePushAndPop(t *testing.T) {
 
 	// total := 142
 
-	ht.PushFront(&headerTableEntry{hd1})
+	ht.PushFront(newHeaderTableEntry(hd1))
 
 	if ht.tableSize != 43 {
 		t.Errorf("ht.tableSize = %v, want %v", ht.tableSize, 43)
 	}
 
-	ht.PushFront(&headerTableEntry{hd2})
-	ht.PushFront(&headerTableEntry{hd3})
+	ht.PushFront(newHeaderTableEntry(hd2))
+	ht.PushFront(newHeaderTableEntry(hd3))
 
 	if ht.tablelen != 2 {
 		t.Errorf("ht.tablelen = %v, want %v", ht.tablelen, 2)
@@ -53,8 +53,8 @@ func TestHeaderChangeTableSize(t *testing.T) {
 	// 7 + 7 + 32 = 46
 	hd2 := &Header{":method", "OPTIONS", false}
 
-	ht.PushFront(&headerTableEntry{hd1})
-	ht.PushFront(&headerTableEntry{hd2})
+	ht.PushFront(newHeaderTableEntry(hd1))
+	ht.PushFront(newHeaderTableEntry(hd2))
 
 	ht.ChangeTableSize(50)
 
@@ -75,8 +75,8 @@ func TestHeaderSearch(t *testing.T) {
 	hd1 := &Header{":path", "/alpha", false}
 	hd2 := &Header{"bravo", "charlie", false}
 
-	ht.PushFront(&headerTableEntry{hd1})
-	ht.PushFront(&headerTableEntry{hd2})
+	ht.PushFront(newHeaderTableEntry(hd1))
+	ht.PushFront(newHeaderTableEntry(hd2))
 
 	idx, nameValueMatch := ht.Search(":path", "/", false)
 

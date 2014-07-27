@@ -74,11 +74,12 @@ func (enc *Encoder) encodeHeader(dst *bytes.Buffer, header *Header) {
 
 	if enc.shouldIndexing(header) {
 		indexing = true
+
 		var entry *headerTableEntry
 		if idx == -1 {
-			entry = &headerTableEntry{header}
+			entry = newHeaderTableEntry(header)
 		} else {
-			entry = &headerTableEntry{header}
+			entry = newHeaderTableEntry(header)
 		}
 		enc.ht.PushFront(entry)
 	} else {

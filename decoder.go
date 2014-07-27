@@ -390,7 +390,7 @@ func (dec *Decoder) emitNewname() *Header {
 	dec.nvbuf.Reset()
 
 	if dec.indexRequired {
-		entry := &headerTableEntry{header}
+		entry := newHeaderTableEntry(header)
 		dec.ht.PushFront(entry)
 	}
 
@@ -408,7 +408,7 @@ func (dec *Decoder) emitIndname() *Header {
 	dec.nvbuf.Reset()
 
 	if dec.indexRequired {
-		entry := &headerTableEntry{header}
+		entry := newHeaderTableEntry(header)
 		dec.ht.PushFront(entry)
 	}
 
