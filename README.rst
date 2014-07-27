@@ -16,6 +16,11 @@ The changes from draft-08 are:
 
 This is my first golang project. Any comments and patches are welcome.
 
+Documentation
+-------------
+
+https://godoc.org/github.com/tatsuhiro-t/go-http2-hpack
+
 Example
 -------
 
