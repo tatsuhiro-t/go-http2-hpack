@@ -39,6 +39,8 @@ func runTest(test *hpackTest) error {
 		headers := []map[string]string{}
 
 		for cur := 0; cur < len(input); {
+			// Decode 1 byte at a time to check streaming
+			// decoder.
 			header, nread, err := decoder.Decode(input[cur:cur+1],
 				cur+1 == len(input))
 
